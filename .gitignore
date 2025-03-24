@@ -1,0 +1,9 @@
+Assets/Pixel Adventure 1
+Library/
+Temp/
+Obj/
+Logs/
+MemoryCaptures/
+*.csproj
+*.unityproj
+*.sln
