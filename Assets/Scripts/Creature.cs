@@ -8,6 +8,7 @@ public enum Species { Rabbit, Wolf, Cat, Frog, Maggot, Fly };
 public class Creature : Thing {
     protected HashSet<Attribute> detectableThings = new HashSet<Attribute>(); // Set of tags creature is concerned about
     private Rigidbody2D rb;
+    SpriteRenderer renderer;
 
     public bool isSeeking = false, isBreeding = false, isBirthing = false;
 
@@ -53,6 +54,7 @@ public class Creature : Thing {
         attributes.Add(Attribute.Creature);
 
         rb = GetComponent<Rigidbody2D>();
+        renderer = GetComponent<SpriteRenderer>();
 
         mutator = FindFirstObjectByType<Mutator>(); // Will be tied to the mutator game object
 
@@ -100,7 +102,6 @@ public class Creature : Thing {
 
     // Initiates / continues a breed between two creatures
     void Breed(Creature creature) {
-        //Debug.Log(";
         if (hp < maxHp) return; // Can't breed if hurt
 
         if (breedTime >= timeToBreed) // Once the breeding process is finished
@@ -128,7 +129,6 @@ public class Creature : Thing {
         isBreeding = false;
         breedTime = 0;
         speed = maxSpeed;
-        isSeeking = false;
     }
 
     public void StartBirth() {
@@ -140,8 +140,6 @@ public class Creature : Thing {
     private void EndBirth() {
         speed = maxSpeed;
         isBirthing = false;
-
-        SpriteRenderer renderer = GetComponent<SpriteRenderer>();
 
         // Possibility of not birthing any children
         short numToBirth = (short)mutator.Rand(maxBirth + 1);
@@ -194,14 +192,6 @@ public class Creature : Thing {
     // Returns a list of the attributes which insertect with the current creatures detactableThings
     public List<Attribute> Detects(List<Attribute> attributes) {
         return attributes.Where(attribute => detectableThings.Contains(attribute)).ToList();
-        //List<Attribute> detectedAttributes = new List<Attribute>();
-        //foreach(Attribute attribute in attributes) {
-        //    if (detectableThings.Contains(attribute)) {
-        //        detectedAttributes.Add(attribute);
-        //    }
-        //}
-
-        //return detectedAttributes;
     }
 
     protected void Eat(Food food) {
@@ -254,10 +244,6 @@ public class Creature : Thing {
     public virtual void OnLeaveCollide(Thing thing, List<Attribute> attributes) {
         foreach (Attribute attribute in attributes) {
             switch (attribute) {
-                case Attribute.Food:
-                    if (!isBreeding) isSeeking = false;
-                    break;
-
                 case Attribute.Creature:
                     Creature creature = (Creature)thing;
                     // Only cancel the breed if the current partner leaves
@@ -265,6 +251,8 @@ public class Creature : Thing {
                     break;
             }
         }
+
+        isSeeking = false;
     }
 
     private void OnTriggerStay2D(Collider2D collision) {
